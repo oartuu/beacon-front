@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { ClassResponse } from "@/app/list/[shareToken]/page";
 interface PageProps {
   params: Promise<{
     classId: string;
@@ -49,6 +50,7 @@ export default function page({ params }: PageProps) {
   const router = useRouter();
   const [isListDialogOpen, setIsListDialogOpen] = useState(false);
   const [lists, setLists] = useState<List[]>([]);
+  const [className, setClassName] = useState("");
   const {
     register,
     handleSubmit,
@@ -100,6 +102,16 @@ export default function page({ params }: PageProps) {
         const jsonData = await res.json();
 
         setLists(jsonData);
+
+          const classFetch = await fetch(
+          `https://beacon-api-liart.vercel.app/class/${jsonData[0].classId}`,
+        );
+
+        const classData:ClassResponse = await classFetch.json()
+        
+        setClassName(classData.name)
+
+
       } catch (error) {
         console.error(error);
       }
@@ -191,7 +203,7 @@ export default function page({ params }: PageProps) {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage className="text-zinc-100">
-                  "class_name"
+                 {className}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>

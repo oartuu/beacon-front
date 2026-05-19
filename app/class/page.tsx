@@ -109,7 +109,7 @@ export default function Home() {
   };
 
   return (
-    <div className="h-dvh flex flex-col bg-zinc-100 ">
+    <div className="h-dvh flex flex-col bg-zinc-100 dark:bg-zinc-900">
       <header className="bg-zinc-800 w-full h-18 flex justify-center items-center shadow-md">
         <div>
           <input
