@@ -42,6 +42,12 @@ export interface Response {
   itens: Item[];
 }
 
+export interface ClassResponse {
+  id: string;
+  name: string;
+  professorId: string;
+  createdAt: string
+}
 export interface Item {
   id: string;
   listId: string;
@@ -61,6 +67,7 @@ export default function page({ params }: PageProps) {
   const router = useRouter();
   const [tableData, setTableData] = useState<TableData[]>([]);
   const [listName, setListName] = useState("");
+  const [className, setClassName] = useState("");
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const shareLink = `https://beacon4u.vercel.app/list/send/${shareToken}`;
   useEffect(() => {
@@ -80,6 +87,14 @@ export default function page({ params }: PageProps) {
         const data: Response = await response.json();
 
         setListName(data.name);
+
+        const classFetch = await fetch(
+          `https://beacon-api-liart.vercel.app/class/${data.classId}`,
+        );
+
+        const classData:ClassResponse= await classFetch.json()
+
+        setClassName(classData.name);
 
         // pega apenas os itens
         const rows = data.itens
@@ -126,7 +141,7 @@ export default function page({ params }: PageProps) {
                     href="/class"
                     className="text-zinc-300 hover:text-zinc-100"
                   >
-                    "class_name"
+                    {className}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
