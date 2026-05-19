@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import * as XLSX from "xlsx";
 import {
   Table,
   TableBody,
@@ -118,6 +118,37 @@ export default function page({ params }: PageProps) {
      setIsShareDialogOpen(true);
    };
 
+    const exportToExcel = async () => {
+      const response = await fetch(
+        `https://beacon-api-liart.vercel.app/list/${shareToken}`,
+      );
+      const data = await response.json();
+
+      // pega apenas os itens
+      const rows = data.itens
+        .sort((a: any, b: any) =>
+          a.name.localeCompare(b.name, "pt-BR", {
+            sensitivity: "base",
+          }),
+        )
+        .map((item: any) => ({
+          Nome: item.name,
+          Matricula: item.registration_number,
+          Data: new Date(item.createdAt).toLocaleString("pt-BR"),
+        }));
+
+      // cria planilha
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+
+      // cria workbook
+      const workbook = XLSX.utils.book_new();
+
+      // adiciona worksheet
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Lista");
+
+      // download do arquivo
+      XLSX.writeFile(workbook, `${data.name}.xlsx`);
+    };
   return (
     <div className="h-dvh flex flex-col bg-zinc-100 dark:bg-zinc-900 ">
       <header className="bg-zinc-800 w-full px-4 h-18 flex justify-between items-center shadow-md">
@@ -158,6 +189,7 @@ export default function page({ params }: PageProps) {
         <div className="flex gap-2">
           <Button
             size={"lg"}
+            onClick={exportToExcel}
             className=" flex justify-between hover:cursor-pointer bg-zinc-100 text-zinc-900"
           >
             <SquareArrowOutUpRight />
