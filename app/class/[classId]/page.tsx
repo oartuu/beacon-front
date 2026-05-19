@@ -8,12 +8,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CirclePlus, NotebookTabs, School } from "lucide-react";
+import { CirclePlus, NotebookTabs, Plus, School } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import QRCode from "react-qr-code";
 import * as XLSX from "xlsx";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import Link from "next/link";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { ClassResponse } from "@/app/list/[shareToken]/page";
 interface PageProps {
   params: Promise<{
     classId: string;
@@ -31,20 +42,21 @@ type List = {
   createdAt: string;
 };
 type Inputs = {
-  name:string
-}
+  name: string;
+};
 export default function page({ params }: PageProps) {
   const { classId } = use(params);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   const [isListDialogOpen, setIsListDialogOpen] = useState(false);
   const [lists, setLists] = useState<List[]>([]);
-    const {
-      register,
-      handleSubmit,
-      watch,
-      formState: { errors },
-    } = useForm<Inputs>();
+  const [className, setClassName] = useState("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<Inputs>();
   const [shareToken, setShareToken] = useState("");
   const shareLink = `https://beacon4u.vercel.app/list/send/${shareToken}`;
   useEffect(() => {
@@ -90,6 +102,16 @@ export default function page({ params }: PageProps) {
         const jsonData = await res.json();
 
         setLists(jsonData);
+
+          const classFetch = await fetch(
+          `https://beacon-api-liart.vercel.app/class/${jsonData[0].classId}`,
+        );
+
+        const classData:ClassResponse = await classFetch.json()
+        
+        setClassName(classData.name)
+
+
       } catch (error) {
         console.error(error);
       }
@@ -98,17 +120,19 @@ export default function page({ params }: PageProps) {
     fetchLists();
   }, [classId, router]);
 
-
   const exportToExcel = async () => {
-
-    const response = await fetch(`https://beacon-api-liart.vercel.app/list/${shareToken}`);
+    const response = await fetch(
+      `https://beacon-api-liart.vercel.app/list/${shareToken}`,
+    );
     const data = await response.json();
 
     // pega apenas os itens
     const rows = data.itens
-      .sort((a: any, b: any) => a.name.localeCompare(b.name, "pt-BR", {
-        sensitivity:"base"
-      }))
+      .sort((a: any, b: any) =>
+        a.name.localeCompare(b.name, "pt-BR", {
+          sensitivity: "base",
+        }),
+      )
       .map((item: any) => ({
         Nome: item.name,
         Matricula: item.registration_number,
@@ -128,8 +152,7 @@ export default function page({ params }: PageProps) {
     XLSX.writeFile(workbook, `${data.name}.xlsx`);
   };
 
-
-  const onSubmit = async (formData:Inputs) => {
+  const onSubmit = async (formData: Inputs) => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -157,44 +180,64 @@ export default function page({ params }: PageProps) {
     } catch (err) {}
   };
 
-  const handleShareList = (shareToken:string)=>{
-    setIsListDialogOpen(true)
-    setShareToken(shareToken)
-  }
+  const handleShareList = (shareToken: string) => {
+    setIsListDialogOpen(true);
+    setShareToken(shareToken);
+  };
   return (
-    <div className="h-dvh flex flex-col bg-zinc-100 ">
-      <header className="bg-zinc-800 w-full h-18 flex justify-center items-center shadow-md">
+    <div className="h-dvh flex flex-col bg-zinc-100 dark:bg-zinc-900 ">
+      <header className="bg-zinc-800 w-full px-4 h-18 flex justify-between items-center shadow-md">
         <div>
-          <input
-            className="bg-zinc-50 text-zinc-950 w-xl p-2 rounded-sm shadow-"
-            type="text"
-            placeholder="pesquisar turma"
-          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link
+                    href="/class"
+                    className="text-zinc-300 hover:text-zinc-100"
+                  >
+                    Turmas
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-zinc-100">
+                 {className}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
+        <div>
+          <Button
+            size={"lg"}
+            className=" flex justify-between hover:cursor-pointer bg-zinc-100 text-zinc-900"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus />
+            Nova Lista
+          </Button>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-wrap items-start content-start  gap-2  p-4 overflow-auto">
+      <main className="flex-1 flex flex-col gap-2  p-4 overflow-auto">
         {lists.map((l) => (
-          <Card
-            key={l.id}
-            onClick={() => handleShareList(l.shareToken)}
-            className="w-1/6  hover:cursor-pointer"
-          >
-            <CardContent className="flex flex-col gap-4 items-center justify-center">
-              <p>{l.name}</p>
-              <NotebookTabs />
-            </CardContent>
-          </Card>
+          <Item key={l.id} variant="muted" className=" shadow-lg " asChild>
+            <Link  href={`/list/${l.shareToken}`}>
+              <ItemMedia variant="icon">
+                <NotebookTabs/>
+              </ItemMedia>
+              <ItemContent >
+                <ItemTitle >{l.name}</ItemTitle>
+                <ItemDescription>
+                  class name
+                </ItemDescription>
+              </ItemContent>
+            </Link>
+          </Item>
         ))}
-        <Card
-          onClick={() => setIsDialogOpen(true)}
-          className="w-1/6 bg-transparent border-2 border-zinc-950 border-dashed hover:cursor-pointer"
-        >
-          <CardContent className="flex flex-col gap-4 items-center justify-center">
-            <p>Nova Lista</p>
-            <CirclePlus />
-          </CardContent>
-        </Card>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent>
