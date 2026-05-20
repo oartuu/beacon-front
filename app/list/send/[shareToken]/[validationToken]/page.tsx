@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 interface PageProps {
   params: Promise<{
     shareToken: string;
+    validationToken: string;
   }>;
 }
 
@@ -20,7 +21,7 @@ type Inputs = {
 export default function Page({ params }: PageProps) {
   const router = useRouter();
   const [error, setError] = useState(false);
-  const { shareToken } = use(params);
+  const { shareToken, validationToken } = use(params);
 
   const {
     register,
@@ -42,7 +43,8 @@ export default function Page({ params }: PageProps) {
           },
           body: JSON.stringify({
             name:formData.name,
-            registration_number:formData.registration_number
+            registration_number:formData.registration_number,
+            validationToken: validationToken,
           }),
         },
       );
