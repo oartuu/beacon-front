@@ -69,7 +69,7 @@ export default function page({ params }: PageProps) {
   const [listName, setListName] = useState("");
   const [className, setClassName] = useState("");
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const shareLink = `https://beacon4u.vercel.app/list/send/${shareToken}`;
+  const shareLink = `https://beacon-api-liart.vercel.app/list/validation/${shareToken}`;
   useEffect(() => {
     const fetchData = async () => {
       try {
