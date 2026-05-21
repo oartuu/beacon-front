@@ -59,6 +59,7 @@ export interface Item {
 interface TableData {
   name: string;
   registration_number: string;
+  origin:string;
   date: string;
 }
 
@@ -107,6 +108,7 @@ export default function page({ params }: PageProps) {
             name: item.name,
             registration_number: item.registration_number,
             date: new Date(item.createdAt).toLocaleString("pt-BR"),
+            origin:item.origin
           }));
 
         setTableData(rows);
@@ -135,6 +137,7 @@ export default function page({ params }: PageProps) {
           Nome: item.name,
           Matricula: item.registration_number,
           Data: new Date(item.createdAt).toLocaleString("pt-BR"),
+          Origem:item.origin
         }));
 
       // cria planilha
@@ -147,7 +150,7 @@ export default function page({ params }: PageProps) {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Lista");
 
       // download do arquivo
-      XLSX.writeFile(workbook, `${data.name}.xlsx`);
+      XLSX.writeFile(workbook, `${className}-${data.name}.xlsx`);
     };
   return (
     <div className="h-dvh flex flex-col bg-zinc-100 dark:bg-zinc-900 ">
@@ -190,7 +193,7 @@ export default function page({ params }: PageProps) {
           <Button
             size={"lg"}
             onClick={exportToExcel}
-            className=" flex justify-between hover:cursor-pointer bg-zinc-100 text-zinc-900"
+            className=" flex justify-between hover:cursor-pointer hover:text-zinc-100 bg-zinc-100 text-zinc-900"
           >
             <SquareArrowOutUpRight />
             Exportar
@@ -199,7 +202,7 @@ export default function page({ params }: PageProps) {
           <Button
             size={"lg"}
             onClick={handleShareList}
-            className=" flex justify-between hover:cursor-pointer bg-zinc-100 text-zinc-900"
+            className=" flex justify-between hover:cursor-pointer hover:text-zinc-100 bg-zinc-100 text-zinc-900"
           >
             <Share2 />
             Compartilhar
@@ -214,6 +217,7 @@ export default function page({ params }: PageProps) {
               <TableHead className="border-r ">NOME:</TableHead>
               <TableHead className="border-r">MATRÍCULA:</TableHead>
               <TableHead className="text-right">DATA:</TableHead>
+              <TableHead className="text-right">ORIGEM:</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -223,13 +227,14 @@ export default function page({ params }: PageProps) {
                 <TableCell className="border-r">
                   {r.registration_number}
                 </TableCell>
-                <TableCell className="text-right">{r.date}</TableCell>
+                <TableCell className="text-right border-r">{r.date}</TableCell>
+                <TableCell className="text-right">{r.origin}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-          <DialogContent className="bg-zinc-800">
+          <DialogContent className="dark:bg-zinc-200 dark:text-zinc-900">
             <DialogHeader>
               <DialogTitle>Compartilhar lista</DialogTitle>
             </DialogHeader>
